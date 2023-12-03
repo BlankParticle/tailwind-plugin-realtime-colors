@@ -1,6 +1,9 @@
 {
   "name": "tailwind-plugin-realtime-colors",
-  "main": "dist/plugin.js",
+  "main": "dist/plugin.cjs",
+  "module": "dist/plugin.js",
+  "version": "0.0.0",
+  "description": "A Tailwind CSS plugin that allows you to load colors from URL of Realtime Colors",
   "type": "module",
   "scripts": {
     "dev": "tsup src/*.ts --watch --dts",
@@ -24,5 +27,27 @@
   },
   "peerDependencies": {
     "tailwindcss": "^3.3.5"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BlankParticle/tailwind-plugin-realtime-colors"
+  },
+  "bugs": {
+    "url": "https://github.com/BlankParticle/tailwind-plugin-realtime-colors/issues"
+  },
+  "homepage": "https://github.com/BlankParticle/tailwind-plugin-realtime-colors",
+  "keywords": ["tailwindcss", "tailwind", "tailwind-plugin", "realtime-colors"],
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/BlankParticle"
+    }
+  ],
+  "author": {
+    "name": "BlankParticle",
+    "email": "blankparticle@gmail.com",
+    "url": "https://blankparticle.in"
+  },
+  "packageManager": "pnpm@8.11.0",
+  "license": "MIT"
 }

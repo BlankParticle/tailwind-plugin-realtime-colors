@@ -1,0 +1,50 @@
+name: Release 🚀
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    permissions:
+      id-token: write
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code 🛎
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Pnpm 📦
+        uses: pnpm/action-setup@v2
+
+      - name: Setup Node.js 🟩
+        uses: actions/setup-node@v4
+        with:
+          cache: "pnpm"
+          node-version: "20"
+
+      - name: Install Dependencies 📦
+        run: pnpm install
+
+      - name: Create Git Release 🏷
+        run: pnpx changelogithub
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build 🏗
+        run: pnpm build
+
+      - name: Publish to NPM 🚀
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true
+        run: |
+          npm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+          pnpm publish --access public --no-git-checks
