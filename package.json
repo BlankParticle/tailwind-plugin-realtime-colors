@@ -7,13 +7,10 @@
   "type": "module",
   "scripts": {
     "dev": "tsup src/*.ts --watch --dts",
-    "build:cjs": "tsup src/*.ts --format cjs --dts",
-    "build:esm": "tsup src/*.ts --format esm --dts",
-    "build": "pnpm clean && pnpm run build:cjs && pnpm run build:esm",
-    "clean": "rm -rf dist",
-    "check": "biome check src/*.ts",
-    "fix": "biome check src/*.ts --apply",
-    "format": "biome format src/*.ts --write"
+    "build": "tsup src/*.ts --no-splitting --dts --treeshake --format cjs,esm",
+    "check": "biome check .",
+    "fix": "biome check . --apply",
+    "format": "biome format . --write"
   },
   "exports": {
     "import": "./dist/plugin.js",
@@ -25,7 +22,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
     "@types/color-convert": "^2.0.3",
-    "@types/node": "^20.10.2",
+    "@types/node": "^20.10.3",
     "tsup": "^8.0.1",
     "typescript": "^5.3.2"
   },
@@ -40,7 +37,12 @@
     "url": "https://github.com/BlankParticle/tailwind-plugin-realtime-colors/issues"
   },
   "homepage": "https://github.com/BlankParticle/tailwind-plugin-realtime-colors",
-  "keywords": ["tailwindcss", "tailwind", "tailwind-plugin", "realtime-colors"],
+  "keywords": [
+    "tailwindcss",
+    "tailwind",
+    "tailwind-plugin",
+    "realtime-colors"
+  ],
   "funding": [
     {
       "type": "github",
