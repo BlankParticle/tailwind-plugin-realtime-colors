@@ -2,7 +2,7 @@
   "name": "tailwind-plugin-realtime-colors",
   "main": "dist/plugin.cjs",
   "module": "dist/plugin.js",
-  "version": "1.0.0-development",
+  "version": "1.1.0-development",
   "description": "A Tailwind CSS plugin that allows you to load colors from URL of Realtime Colors",
   "type": "module",
   "scripts": {
@@ -37,12 +37,7 @@
     "url": "https://github.com/BlankParticle/tailwind-plugin-realtime-colors/issues"
   },
   "homepage": "https://github.com/BlankParticle/tailwind-plugin-realtime-colors",
-  "keywords": [
-    "tailwindcss",
-    "tailwind",
-    "tailwind-plugin",
-    "realtime-colors"
-  ],
+  "keywords": ["tailwindcss", "tailwind", "tailwind-plugin", "realtime-colors"],
   "funding": [
     {
       "type": "github",
