@@ -1,19 +1,9 @@
+import { hex, hsl, rgb } from "color-convert";
 import plugin from "tailwindcss/plugin";
-import { ThemeConfig } from "tailwindcss/types/config";
-import {
-  type ColorTuple,
-  type HexColor,
-  type Modifier,
-  type Variants,
-  hexToRgb,
-  hslToRgb,
-  invertColor,
-  rgbToHsl,
-  shadeModifier,
-  tintModifier,
-  variants,
-} from "./utils";
+import { type ThemeConfig } from "tailwindcss/types/config";
+import { ColorTuple, invertColor, isColorDark, shadeModifier, tintModifier } from "./utils";
 
+type HexColor = `#${string}`;
 type Plugin = ReturnType<typeof plugin>;
 export type RealtimeColorOptions = {
   colors: {
@@ -27,14 +17,11 @@ export type RealtimeColorOptions = {
   shades: (keyof RealtimeColorOptions["colors"])[];
   prefix: string;
   shadeAlgorithm: keyof typeof availableModifiers;
+  colorFormat: "rgb" | "hsl" | "lch" | "lab";
 };
 type RealtimeColorOptionsWithoutColor = Omit<RealtimeColorOptions, "colors">;
 
-const isDarkMode = (color: HexColor) => {
-  const l = rgbToHsl(hexToRgb(color))[2];
-  return l > 50;
-};
-
+const variants = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const availableModifiers = {
   tailwind: {
     50: tintModifier(0.95),
@@ -42,24 +29,49 @@ const availableModifiers = {
     200: tintModifier(0.75),
     300: tintModifier(0.6),
     400: tintModifier(0.3),
-    500: (c: ColorTuple<"RGB">) => c,
+    500: (c: ColorTuple) => c,
     600: shadeModifier(0.9),
     700: shadeModifier(0.6),
     800: shadeModifier(0.45),
     900: shadeModifier(0.3),
     950: shadeModifier(0.2),
-  } as Record<Variants, Modifier<"RGB">>,
+  },
 
   realtimeColors: Object.fromEntries(
     variants.map((variant) => [
       variant,
-      (rgb) => {
-        const [h, s, _l] = rgbToHsl(rgb);
-        return hslToRgb([h, s, 100 - variant / 10]);
+      (color: ColorTuple) => {
+        const [h, s] = rgb.hsl(color);
+        return hsl.rgb([h, s, 100 - variant / 10]);
       },
     ]),
-  ) as Record<Variants, Modifier<"RGB">>,
+  ),
 };
+
+const formatRGBColor = (color: ColorTuple, to: RealtimeColorOptions["colorFormat"]) => {
+  switch (to) {
+    case "rgb": {
+      const [r, g, b] = color;
+      return `${r}, ${g}, ${b}`;
+    }
+    case "hsl": {
+      const [h, s, l] = rgb.hsl(color);
+      return `${h} ${s}% ${l}%`;
+    }
+    case "lab": {
+      const [l, a, b] = rgb.lab.raw(color).map((c) => c.toFixed(2));
+      return `${l}% ${a} ${b}`;
+    }
+    case "lch": {
+      const [l, c, h] = rgb.lch.raw(color).map((c) => c.toFixed(2));
+      return `${l}% ${c} ${h}`;
+    }
+  }
+};
+
+const wrapInFunction = (color: string, type: RealtimeColorOptions["colorFormat"]) =>
+  // For some reason rgb() doesn't work with `/ <alpha-value>`
+  type === "rgb" ? `rgba(${color})` : `${type}(${color} / <alpha-value>)`;
 
 const getCSS = (config: RealtimeColorOptions) => {
   const { theme, shades, prefix, colors } = config;
@@ -68,18 +80,27 @@ const getCSS = (config: RealtimeColorOptions) => {
   const variables: Record<string, string> = {};
   const altVariables: Record<string, string> = {};
   for (const [colorName, color] of Object.entries(colors)) {
+    const rgbColor = hex.rgb(color);
     if (shades.includes(colorName as keyof typeof colors)) {
-      const rgb = hexToRgb(color);
       for (const [variant, modifier] of Object.entries(modifiers)) {
-        variables[`--${prefix}${colorName}-${variant}`] = modifier(rgb).join(",");
-        altVariables[`--${prefix}${colorName}-${variant}`] = invertColor(modifier(rgb)).join(",");
+        variables[`--${prefix}${colorName}-${variant}`] = formatRGBColor(
+          modifier(rgbColor),
+          config.colorFormat,
+        );
+        altVariables[`--${prefix}${colorName}-${variant}`] = formatRGBColor(
+          invertColor(modifier(rgbColor)),
+          config.colorFormat,
+        );
       }
     } else {
-      variables[`--${prefix}${colorName}`] = hexToRgb(color).join(", ");
-      altVariables[`--${prefix}${colorName}`] = invertColor(hexToRgb(color)).join(", ");
+      variables[`--${prefix}${colorName}`] = formatRGBColor(rgbColor, config.colorFormat);
+      altVariables[`--${prefix}${colorName}`] = formatRGBColor(
+        invertColor(rgbColor),
+        config.colorFormat,
+      );
     }
   }
-  const isDark = isDarkMode(colors.background);
+  const isDark = isColorDark(colors.background);
   return [
     {
       ":root": isDark ? variables : altVariables,
@@ -87,24 +108,27 @@ const getCSS = (config: RealtimeColorOptions) => {
     },
   ];
 };
-
 const getTheme = (config: RealtimeColorOptions) => {
   const { theme, shades, prefix, colors } = config;
   const colorsTheme: ThemeConfig["colors"] = {};
   const modifiers = availableModifiers[config.shadeAlgorithm];
   for (const [colorName, color] of Object.entries(colors)) {
+    const rgbColor = hex.rgb(color);
     if (shades.includes(colorName as keyof typeof colors)) {
-      const rgb = hexToRgb(color);
       colorsTheme[`${prefix}${colorName}`] = {};
       for (const [variant, modifier] of Object.entries(modifiers)) {
-        (colorsTheme[`${prefix}${colorName}`] as Record<string, string>)[variant] = `rgba(${
-          theme ? `var(--${prefix}${colorName}-${variant})` : modifier(rgb).join(", ")
-        })`;
+        (colorsTheme[`${prefix}${colorName}`] as Record<string, string>)[variant] = wrapInFunction(
+          theme
+            ? `var(--${prefix}${colorName}-${variant})`
+            : formatRGBColor(modifier(rgbColor), config.colorFormat),
+          config.colorFormat,
+        );
       }
     } else {
-      colorsTheme[`${prefix}${colorName}`] = `rgba(${
-        theme ? `var(--${prefix}${colorName})` : hexToRgb(color).join(", ")
-      })`;
+      colorsTheme[`${prefix}${colorName}`] = wrapInFunction(
+        theme ? `var(--${prefix}${colorName})` : formatRGBColor(rgbColor, config.colorFormat),
+        config.colorFormat,
+      );
     }
   }
   return colorsTheme;
@@ -139,6 +163,7 @@ function realtimeColors(
     shades: ["primary", "secondary", "accent"],
     prefix: "",
     shadeAlgorithm: "tailwind",
+    colorFormat: "rgb",
   };
 
   if (typeof configOrUrl === "string") {

@@ -19,8 +19,12 @@
     "import": "./dist/plugin.js",
     "require": "./dist/plugin.cjs"
   },
+  "dependencies": {
+    "color-convert": "^2.0.1"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
+    "@types/color-convert": "^2.0.3",
     "@types/node": "^20.10.2",
     "tsup": "^8.0.1",
     "typescript": "^5.3.2"
