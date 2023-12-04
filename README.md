@@ -93,13 +93,14 @@ realtimeColors({
 
 ## 🔎 Options
 
-| `option`         | `type`     | `default`                            | `description`                                                                                |
+| Option           | Type       | Default                              | Description                                                                                  |
 | ---------------- | ---------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
 | `colors`         | `object`   | `{}`                                 | The colors to use. If you pass an url, this will be ignored.                                 |
 | `theme`          | `boolean`  | `true`                               | Whether to generate invert variant and use them with css variables.                          |
 | `shades`         | `string[]` | `["primary", "secondary", "accent"]` | The colors to generate shades of                                                             |
 | `prefix`         | `string`   | `""`                                 | The prefix to use for the colors.                                                            |
 | `shadeAlgorithm` | `string`   | `"tailwind"`                         | The algorithm to use for generating shades. See [Shading Algorithms](#🎨-shading-algorithms) |
+| `colorFormat`    | `string`   | `"rgb"`                              | The format to use for the colors. Can be `rgb`, `hsl`, `lch`, `lab`                          |
 
 ### 🎨 Shading Algorithms
 
