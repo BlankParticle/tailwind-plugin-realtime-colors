@@ -2,7 +2,7 @@
   "name": "tailwind-plugin-realtime-colors",
   "main": "dist/plugin.cjs",
   "module": "dist/plugin.js",
-  "version": "0.0.0",
+  "version": "1.0.0-development",
   "description": "A Tailwind CSS plugin that allows you to load colors from URL of Realtime Colors",
   "type": "module",
   "scripts": {
