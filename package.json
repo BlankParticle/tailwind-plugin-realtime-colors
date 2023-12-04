@@ -6,8 +6,8 @@
   "description": "A Tailwind CSS plugin that allows you to load colors from URL of Realtime Colors",
   "type": "module",
   "scripts": {
-    "dev": "tsup src/*.ts --watch --dts",
-    "build": "tsup src/*.ts --no-splitting --dts --treeshake --format cjs,esm",
+    "dev": "tsup src/plugin.ts --watch --dts",
+    "build": "tsup src/plugin.ts --no-splitting --dts --treeshake --format cjs,esm",
     "check": "biome check .",
     "fix": "biome check . --apply",
     "format": "biome format . --write"
