@@ -14,6 +14,12 @@ This plugin allows you to load colors from URL of [Realtime Colors](https://www.
     <a href="https://github.com/BlankParticle/tailwind-plugin-realtime-colors/blob/main/LICENSE">
         <img alt="License" src="https://img.shields.io/github/license/BlankParticle/tailwind-plugin-realtime-colors?style=for-the-badge"/>
     </a>
+    <a href="https://www.npmjs.com/package/tailwind-plugin-realtime-colors">
+        <img alt="Npm Downloads" src="https://img.shields.io/npm/dm/tailwind-plugin-realtime-colors?style=for-the-badge">
+    </a>
+    <a href="https://github.com/BlankParticle/tailwind-plugin-realtime-colors/actions/workflows/release.yml">
+        <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/BlankParticle/tailwind-plugin-realtime-colors/release.yml?style=for-the-badge"/>
+    </a>
     <a href="https://github.com/sponsors/BlankParticle">
         <img alt="GitHub Sponsors" src="https://img.shields.io/github/sponsors/BlankParticle?style=for-the-badge"/>
     </a>
