@@ -1,17 +1,27 @@
-import { hex, hsl, rgb } from "color-convert";
+import converters from "color-convert";
 import plugin from "tailwindcss/plugin";
 import { type ThemeConfig } from "tailwindcss/types/config";
-import { ColorTuple, invertColor, isColorDark, shadeModifier, tintModifier } from "./utils";
+import {
+  ColorTuple,
+  invertColor as invertColorRGB,
+  isColorDark,
+  shadeModifier,
+  tintModifier,
+} from "./utils";
+
+const { hex, rgb, hsl } = converters;
+
+type DynamicColor = `dynamic()`;
 
 type HexColor = `#${string}`;
 type Plugin = ReturnType<typeof plugin>;
 export type RealtimeColorOptions = {
   colors: {
-    text: HexColor;
-    background: HexColor;
-    primary: HexColor;
-    secondary: HexColor;
-    accent: HexColor;
+    text: HexColor | DynamicColor;
+    background: HexColor | DynamicColor;
+    primary: HexColor | DynamicColor;
+    secondary: HexColor | DynamicColor;
+    accent: HexColor | DynamicColor;
   };
   theme: boolean;
   shades: (keyof RealtimeColorOptions["colors"])[];
@@ -79,7 +89,10 @@ const getCSS = (config: RealtimeColorOptions) => {
   const modifiers = availableModifiers[config.shadeAlgorithm];
   const variables: Record<string, string> = {};
   const altVariables: Record<string, string> = {};
-  for (const [colorName, color] of Object.entries(colors)) {
+
+  for (const [colorName, color] of Object.entries(colors).filter(
+    ([_, color]) => color === "dynamic()",
+  )) {
     const rgbColor = hex.rgb(color);
     if (shades.includes(colorName as keyof typeof colors)) {
       for (const [variant, modifier] of Object.entries(modifiers)) {
@@ -88,18 +101,19 @@ const getCSS = (config: RealtimeColorOptions) => {
           config.colorFormat,
         );
         altVariables[`--${prefix}${colorName}-${variant}`] = formatRGBColor(
-          invertColor(modifier(rgbColor)),
+          invertColorRGB(modifier(rgbColor)),
           config.colorFormat,
         );
       }
     } else {
       variables[`--${prefix}${colorName}`] = formatRGBColor(rgbColor, config.colorFormat);
       altVariables[`--${prefix}${colorName}`] = formatRGBColor(
-        invertColor(rgbColor),
+        invertColorRGB(rgbColor),
         config.colorFormat,
       );
     }
   }
+
   const isDark = isColorDark(colors.background);
   return [
     {
@@ -195,4 +209,51 @@ function realtimeColors(
   });
 }
 
+/**
+ *
+ * @param color color in hex format
+ * @param algorithm algorithm to use to create the palette
+ * @param format format to use for the color
+ * @returns A object with the color variants
+ */
+const generateDynamicPalette = (
+  color: string,
+  algorithm: RealtimeColorOptions["shadeAlgorithm"] = "tailwind",
+  format: RealtimeColorOptions["colorFormat"] = "rgb",
+) => {
+  const modifiers = availableModifiers[algorithm];
+  const rgbColor = hex.rgb(color);
+  const palette: Record<string, string> = {};
+  for (const [variant, modifier] of Object.entries(modifiers)) {
+    palette[variant] = wrapInFunction(formatRGBColor(modifier(rgbColor), format), format);
+  }
+  return palette;
+};
+
+/**
+ *
+ * @param palette The palette to convert to CSS
+ * @param colorName color name to use for the CSS variables
+ * @returns CSS Variables Object for the given palette
+ */
+const paletteToCssStyles = (palette: Record<string, string>, colorName: string) => {
+  return Object.fromEntries(
+    Object.entries(palette).map(([variant, color]) => [`--${colorName}-${variant}`, color]),
+  );
+};
+
+/**
+ *
+ * @param color color in hex format
+ * @returns inverted color in hex format
+ */
+const invertColor = (color: string) => {
+  const rgbColor = hex.rgb(color);
+  const inverted = invertColorRGB(rgbColor)
+    .map((c) => c.toString(16).padStart(2, "0"))
+    .join("");
+  return `#${inverted}`;
+};
+
 export default realtimeColors;
+export { isColorDark, generateDynamicPalette, paletteToCssStyles, invertColor };

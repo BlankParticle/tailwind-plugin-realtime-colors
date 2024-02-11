@@ -7,7 +7,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "moduleResolution": "bundler",
-    "moduleDetection": "force",
+    "esModuleInterop": true,
     "allowImportingTsExtensions": true,
     "declaration": true,
     "emitDeclarationOnly": true,
