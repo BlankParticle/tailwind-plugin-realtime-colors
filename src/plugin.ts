@@ -1,17 +1,27 @@
-import { hex, hsl, rgb } from "color-convert";
+import converters from "color-convert";
 import plugin from "tailwindcss/plugin";
 import { type ThemeConfig } from "tailwindcss/types/config";
-import { ColorTuple, invertColor, isColorDark, shadeModifier, tintModifier } from "./utils";
+import {
+  ColorTuple,
+  invertColor as invertColorRGB,
+  isColorDark,
+  shadeModifier,
+  tintModifier,
+} from "./utils";
+
+const { hex, rgb, hsl } = converters;
+
+type DynamicColor = `dynamic()`;
 
 type HexColor = `#${string}`;
 type Plugin = ReturnType<typeof plugin>;
 export type RealtimeColorOptions = {
   colors: {
-    text: HexColor;
-    background: HexColor;
-    primary: HexColor;
-    secondary: HexColor;
-    accent: HexColor;
+    text: HexColor | DynamicColor;
+    background: HexColor | DynamicColor;
+    primary: HexColor | DynamicColor;
+    secondary: HexColor | DynamicColor;
+    accent: HexColor | DynamicColor;
   };
   theme: boolean;
   shades: (keyof RealtimeColorOptions["colors"])[];
@@ -79,7 +89,10 @@ const getCSS = (config: RealtimeColorOptions) => {
   const modifiers = availableModifiers[config.shadeAlgorithm];
   const variables: Record<string, string> = {};
   const altVariables: Record<string, string> = {};
-  for (const [colorName, color] of Object.entries(colors)) {
+
+  for (const [colorName, color] of Object.entries(colors).filter(
+    ([_, color]) => color !== "dynamic()",
+  )) {
     const rgbColor = hex.rgb(color);
     if (shades.includes(colorName as keyof typeof colors)) {
       for (const [variant, modifier] of Object.entries(modifiers)) {
@@ -88,18 +101,19 @@ const getCSS = (config: RealtimeColorOptions) => {
           config.colorFormat,
         );
         altVariables[`--${prefix}${colorName}-${variant}`] = formatRGBColor(
-          invertColor(modifier(rgbColor)),
+          invertColorRGB(modifier(rgbColor)),
           config.colorFormat,
         );
       }
     } else {
       variables[`--${prefix}${colorName}`] = formatRGBColor(rgbColor, config.colorFormat);
       altVariables[`--${prefix}${colorName}`] = formatRGBColor(
-        invertColor(rgbColor),
+        invertColorRGB(rgbColor),
         config.colorFormat,
       );
     }
   }
+
   const isDark = isColorDark(colors.background);
   return [
     {
@@ -195,4 +209,57 @@ function realtimeColors(
   });
 }
 
+/**
+ * Convert a palette object to a CSS string with shades
+ * @param colors colors object with hex color
+ * @param options options for the color generation
+ * @returns A object with the color variants in rgb format
+ */
+const generateDynamicPalette = (
+  colors: Record<string, string>,
+  options: Partial<Pick<RealtimeColorOptions, "shadeAlgorithm" | "colorFormat" | "prefix">> = {},
+) => {
+  const { prefix = "", colorFormat = "rgb", shadeAlgorithm = "tailwind" } = options;
+  const paletteObject: Record<string, string> = {};
+  for (const [colorName, color] of Object.entries(colors)) {
+    const modifiers = availableModifiers[shadeAlgorithm];
+    const rgbColor = hex.rgb(color);
+    for (const [variant, modifier] of Object.entries(modifiers)) {
+      paletteObject[`--${prefix}${colorName}-${variant}`] = formatRGBColor(
+        modifier(rgbColor),
+        colorFormat,
+      );
+    }
+  }
+  return paletteObject;
+};
+
+/**
+ * Invert a given color
+ * @param color color or Record of colors in hex format
+ * @returns inverted colors in hex format
+ */
+function invertColor(color: Record<string, string>): Record<string, string>;
+function invertColor(color: string): string;
+function invertColor(color: string | Record<string, string>) {
+  const invert = (color: string) => {
+    const rgbColor = hex.rgb(color);
+    const inverted = invertColorRGB(rgbColor)
+      .map((c) => c.toString(16).padStart(2, "0"))
+      .join("");
+    return `#${inverted}`;
+  };
+
+  if (typeof color === "string") {
+    return invert(color);
+  }
+
+  const invertedColors: Record<string, string> = {};
+  for (const [colorName, colorValue] of Object.entries(color)) {
+    invertedColors[colorName] = invert(colorValue);
+  }
+  return invertedColors;
+}
+
 export default realtimeColors;
+export { isColorDark, generateDynamicPalette, invertColor };

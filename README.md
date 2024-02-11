@@ -115,6 +115,44 @@ realtimeColors({
 | `tailwind`       | Uses a `Tint` and `Shade` based approach like TailwindCSS. | Generates better results. This is the default.                                               |
 | `realtimeColors` | Uses the same algorithm like Realtime Colors.              | Shades are not that great. You can use this if you want feature parity with Realtime Colors. |
 
+## 🔥 Dynamic Colors
+
+> This doesn't work with URL based colors.
+
+Sometimes you may want to use dynamic colors based on user preferences. To skip generating a color at build time, you can pass `dynamic()` as the color value.
+
+```js
+realtimeColors({
+  colors: {
+    text: "#ededee",
+    background: "#0c0d13",
+    primary: "dynamic()",
+    secondary: "#243579",
+    accent: "#3053dc",
+  },
+  theme: true,
+});
+```
+
+This will skip generating the primary color in the CSS. You will need to manually set the primary color using CSS variables. To help in generating the CSS, you can use the new helper functions exported along with the plugin.
+
+```js
+import { generateDynamicPalette, invertColor } from "tailwind-plugin-realtime-colors";
+
+const primaryColor = getPrimaryColorSomehow();
+
+// You can also pass a config object as the second argument
+const palette = generateDynamicPalette({primary: primaryColor});
+const darkPalette = generateDynamicPalette(invertColor({primary: primaryColor}));
+
+// Now you can use the styles in your CSS
+for (const [key, value] of Object.entries(palette)) {
+  document.documentElement.style.setProperty(key, value);
+}
+// Use dark palette for dark mode later
+
+```
+
 ## 🏗️ How to contribute
 
 ### 🐛 Reporting Bugs

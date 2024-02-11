@@ -1,4 +1,5 @@
-import { hex, rgb } from "color-convert";
+import converters from "color-convert";
+const { hex, rgb } = converters;
 
 export type ColorTuple = [number, number, number];
 
@@ -43,4 +44,9 @@ export const tintModifier = (intensity: number) => (rgb: ColorTuple) =>
 export const shadeModifier = (intensity: number) => (rgb: ColorTuple) =>
   rgb.map((c) => Math.round(c * intensity)) as ColorTuple;
 
+/**
+ * Check if a given Hex color is dark
+ * @param color Given color in hex format
+ * @returns if the color is dark
+ */
 export const isColorDark = (color: string) => hex.hsl(color)[2] > 50;
