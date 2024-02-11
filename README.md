@@ -137,17 +137,20 @@ realtimeColors({
 This will skip generating the primary color in the CSS. You will need to manually set the primary color using CSS variables. To help in generating the CSS, you can use the new helper functions exported along with the plugin.
 
 ```js
-import { generateDynamicPalette } from "tailwind-plugin-realtime-colors";
+import { generateDynamicPalette, invertColor } from "tailwind-plugin-realtime-colors";
 
 const primaryColor = getPrimaryColorSomehow();
 
 // You can also pass a config object as the second argument
 const palette = generateDynamicPalette({primary: primaryColor});
+const darkPalette = generateDynamicPalette(invertColor({primary: primaryColor}));
 
 // Now you can use the styles in your CSS
 for (const [key, value] of Object.entries(palette)) {
   document.documentElement.style.setProperty(key, value);
 }
+// Use dark palette for dark mode later
+
 ```
 
 ## 🏗️ How to contribute
