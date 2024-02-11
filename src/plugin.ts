@@ -210,40 +210,32 @@ function realtimeColors(
 }
 
 /**
- *
- * @param color color in hex format
- * @param algorithm algorithm to use to create the palette
- * @param format format to use for the color
+ * Convert a palette object to a CSS string with shades
+ * @param colors colors object with hex colors
+ * @param options options for the color generation
  * @returns A object with the color variants
  */
 const generateDynamicPalette = (
-  color: string,
-  algorithm: RealtimeColorOptions["shadeAlgorithm"] = "tailwind",
-  format: RealtimeColorOptions["colorFormat"] = "rgb",
+  colors: Record<string, string>,
+  options: Partial<Pick<RealtimeColorOptions, "shadeAlgorithm" | "colorFormat" | "prefix">> = {},
 ) => {
-  const modifiers = availableModifiers[algorithm];
-  const rgbColor = hex.rgb(color);
-  const palette: Record<string, string> = {};
-  for (const [variant, modifier] of Object.entries(modifiers)) {
-    palette[variant] = wrapInFunction(formatRGBColor(modifier(rgbColor), format), format);
+  const { colorFormat = "rgb", prefix = "", shadeAlgorithm = "tailwind" } = options;
+  const paletteObject: Record<string, string> = {};
+  for (const [colorName, color] of Object.entries(colors)) {
+    const modifiers = availableModifiers[shadeAlgorithm];
+    const rgbColor = hex.rgb(color);
+    for (const [variant, modifier] of Object.entries(modifiers)) {
+      paletteObject[`--${prefix}${colorName}-${variant}`] = wrapInFunction(
+        formatRGBColor(modifier(rgbColor), colorFormat),
+        colorFormat,
+      ).replace(" / <alpha-value>", "");
+    }
   }
-  return palette;
+  return paletteObject;
 };
 
 /**
- *
- * @param palette The palette to convert to CSS
- * @param colorName color name to use for the CSS variables
- * @returns CSS Variables Object for the given palette
- */
-const paletteToCssStyles = (palette: Record<string, string>, colorName: string) => {
-  return Object.fromEntries(
-    Object.entries(palette).map(([variant, color]) => [`--${colorName}-${variant}`, color]),
-  );
-};
-
-/**
- *
+ * Invert a given color
  * @param color color in hex format
  * @returns inverted color in hex format
  */
@@ -256,4 +248,4 @@ const invertColor = (color: string) => {
 };
 
 export default realtimeColors;
-export { isColorDark, generateDynamicPalette, paletteToCssStyles, invertColor };
+export { isColorDark, generateDynamicPalette, invertColor };
