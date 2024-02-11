@@ -91,7 +91,7 @@ const getCSS = (config: RealtimeColorOptions) => {
   const altVariables: Record<string, string> = {};
 
   for (const [colorName, color] of Object.entries(colors).filter(
-    ([_, color]) => color === "dynamic()",
+    ([_, color]) => color !== "dynamic()",
   )) {
     const rgbColor = hex.rgb(color);
     if (shades.includes(colorName as keyof typeof colors)) {
@@ -225,10 +225,10 @@ const generateDynamicPalette = (
     const modifiers = availableModifiers[shadeAlgorithm];
     const rgbColor = hex.rgb(color);
     for (const [variant, modifier] of Object.entries(modifiers)) {
-      paletteObject[`--${prefix}${colorName}-${variant}`] = wrapInFunction(
-        formatRGBColor(modifier(rgbColor), colorFormat),
+      paletteObject[`--${prefix}${colorName}-${variant}`] = formatRGBColor(
+        modifier(rgbColor),
         colorFormat,
-      ).replace(" / <alpha-value>", "");
+      );
     }
   }
   return paletteObject;
