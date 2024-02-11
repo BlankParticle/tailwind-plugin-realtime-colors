@@ -217,9 +217,9 @@ function realtimeColors(
  */
 const generateDynamicPalette = (
   colors: Record<string, string>,
-  options: Partial<Pick<RealtimeColorOptions, "shadeAlgorithm" | "prefix">> = {},
+  options: Partial<Pick<RealtimeColorOptions, "shadeAlgorithm" | "colorFormat" | "prefix">> = {},
 ) => {
-  const { prefix = "", shadeAlgorithm = "tailwind" } = options;
+  const { prefix = "", colorFormat = "rgb", shadeAlgorithm = "tailwind" } = options;
   const paletteObject: Record<string, string> = {};
   for (const [colorName, color] of Object.entries(colors)) {
     const modifiers = availableModifiers[shadeAlgorithm];
@@ -227,7 +227,7 @@ const generateDynamicPalette = (
     for (const [variant, modifier] of Object.entries(modifiers)) {
       paletteObject[`--${prefix}${colorName}-${variant}`] = formatRGBColor(
         modifier(rgbColor),
-        "rgb",
+        colorFormat,
       );
     }
   }
