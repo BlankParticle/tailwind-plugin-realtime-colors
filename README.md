@@ -117,7 +117,7 @@ realtimeColors({
 
 ## 🔥 Dynamic Colors
 
-> This doesn't work with URL based colors. Also Opacity modifiers are not supported. So colors like `bg-primary-500/90` will not work.
+> This doesn't work with URL based colors.
 
 Sometimes you may want to use dynamic colors based on user preferences. To skip generating a color at build time, you can pass `dynamic()` as the color value.
 

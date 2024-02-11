@@ -211,15 +211,15 @@ function realtimeColors(
 
 /**
  * Convert a palette object to a CSS string with shades
- * @param colors colors object with hex colors
+ * @param colors colors object with hex color
  * @param options options for the color generation
- * @returns A object with the color variants
+ * @returns A object with the color variants in rgb format
  */
 const generateDynamicPalette = (
   colors: Record<string, string>,
-  options: Partial<Pick<RealtimeColorOptions, "shadeAlgorithm" | "colorFormat" | "prefix">> = {},
+  options: Partial<Pick<RealtimeColorOptions, "shadeAlgorithm" | "prefix">> = {},
 ) => {
-  const { colorFormat = "rgb", prefix = "", shadeAlgorithm = "tailwind" } = options;
+  const { prefix = "", shadeAlgorithm = "tailwind" } = options;
   const paletteObject: Record<string, string> = {};
   for (const [colorName, color] of Object.entries(colors)) {
     const modifiers = availableModifiers[shadeAlgorithm];
@@ -227,7 +227,7 @@ const generateDynamicPalette = (
     for (const [variant, modifier] of Object.entries(modifiers)) {
       paletteObject[`--${prefix}${colorName}-${variant}`] = formatRGBColor(
         modifier(rgbColor),
-        colorFormat,
+        "rgb",
       );
     }
   }
@@ -236,16 +236,30 @@ const generateDynamicPalette = (
 
 /**
  * Invert a given color
- * @param color color in hex format
- * @returns inverted color in hex format
+ * @param color color or Record of colors in hex format
+ * @returns inverted colors in hex format
  */
-const invertColor = (color: string) => {
-  const rgbColor = hex.rgb(color);
-  const inverted = invertColorRGB(rgbColor)
-    .map((c) => c.toString(16).padStart(2, "0"))
-    .join("");
-  return `#${inverted}`;
-};
+function invertColor(color: Record<string, string>): Record<string, string>;
+function invertColor(color: string): string;
+function invertColor(color: string | Record<string, string>) {
+  const invert = (color: string) => {
+    const rgbColor = hex.rgb(color);
+    const inverted = invertColorRGB(rgbColor)
+      .map((c) => c.toString(16).padStart(2, "0"))
+      .join("");
+    return `#${inverted}`;
+  };
+
+  if (typeof color === "string") {
+    return invert(color);
+  }
+
+  const invertedColors: Record<string, string> = {};
+  for (const [colorName, colorValue] of Object.entries(color)) {
+    invertedColors[colorName] = invert(colorValue);
+  }
+  return invertedColors;
+}
 
 export default realtimeColors;
 export { isColorDark, generateDynamicPalette, invertColor };
