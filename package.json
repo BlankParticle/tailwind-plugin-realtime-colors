@@ -51,6 +51,5 @@
     "email": "blankparticle@gmail.com",
     "url": "https://blankparticle.in"
   },
-  "packageManager": "pnpm@8.11.0",
   "license": "MIT"
 }
